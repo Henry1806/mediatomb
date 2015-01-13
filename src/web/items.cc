@@ -38,6 +38,7 @@
 #include "storage.h"
 #include "cds_objects.h"
 #include "cds_resource_manager.h"
+#include "metadata_handler.h"
 
 using namespace zmm;
 using namespace mxml;
@@ -144,8 +145,41 @@ void web::items::process()
 #endif
             item->appendTextChild(_("res"), CdsResourceManager::getFirstResource(RefCast(obj, CdsItem)));
         //item->appendTextChild(_("virtual"), obj->isVirtual() ? _("1") : _("0"), mxml_bool_type);
-        items->appendElementChild(item);
+
+        int resCount = obj->getResourceCount();
+        for (int i = 0; i < resCount; i++)
+        {
+            String url = CdsResourceManager::getNthResource(RefCast(obj, CdsItem), i);
+            log_debug("resource: %d, URL: %s\n", obj->getResource(i)->getHandlerType(), url.c_str());
+
+            if ((i > 0) && (obj->getResource(i)->getHandlerType() == CH_EXTURL) &&
+               ((obj->getResource(i)->getOption(_(RESOURCE_CONTENT_TYPE)) == THUMBNAIL) ||
+                (obj->getResource(i)->getOption(_(RESOURCE_CONTENT_TYPE)) == ID3_ALBUM_ART)))
+            {
+                url = obj->getResource(i)->getOption(_(RESOURCE_OPTION_URL));
+                if (!string_ok(url))
+                    throw _Exception(_("missing thumbnail URL!"));
+            }
+            // only add upnp:AlbumArtURI if we have an AA, skip the resource
+            if ((i > 0) && ((obj->getResource(i)->getHandlerType() == CH_ID3) ||
+                            (obj->getResource(i)->getHandlerType() == CH_MP4) ||
+                            (obj->getResource(i)->getHandlerType() == CH_FLAC) ||
+                            (obj->getResource(i)->getHandlerType() == CH_EXTURL)))
+            {
+                String rct;
+                if (obj->getResource(i)->getHandlerType() == CH_EXTURL)
+                    rct = obj->getResource(i)->getOption(_(RESOURCE_CONTENT_TYPE));
+                else
+                    rct = obj->getResource(i)->getParameter(_(RESOURCE_CONTENT_TYPE));
+                if (rct == ID3_ALBUM_ART)
+                {
+                    item->setAttribute(_("art"), url);
+                    break;
+                }
+            }
+        }
         //}
+        items->appendElementChild(item);
     }
     
 }

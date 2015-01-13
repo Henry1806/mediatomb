@@ -584,3 +584,13 @@ String CdsResourceManager::getFirstResource(Ref<CdsItem> item)
     else
         return urlBase->urlBase;
 }
+
+String CdsResourceManager::getNthResource(Ref<CdsItem> item, int index)
+{
+    Ref<UrlBase> urlBase = addResources_getUrlBase(item);
+
+    if (urlBase->addResID)
+        return urlBase->urlBase + index;
+    else
+        return urlBase->urlBase;
+}

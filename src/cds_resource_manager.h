@@ -60,6 +60,8 @@ public:
     /// \param item Item for which the resources should be built.
     /// \return The URL
     static zmm::String getFirstResource(zmm::Ref<CdsItem> item);
+
+    static zmm::String getNthResource(zmm::Ref<CdsItem> item, int index);
     
 protected:
     class UrlBase : public zmm::Object
