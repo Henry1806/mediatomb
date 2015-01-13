@@ -60,32 +60,27 @@ _DIST_FILES_ICONS = \
 ./icons/blank.gif
 
 _DIST_FILES_JS = \
-./js/autoscan.js \
-./js/md5.js \
-./js/prototype.js \
-./js/auth.js \
-./js/tasks.js \
-./js/tree.js \
-./js/tools.js \
-./js/items.js \
-./js/icons.js \
-./js/nanotree.js \
-./js/iepngfix.htc
+./js/mediatomb.js \
+./js/foundation/foundation.js
+
+_DIST_FILES_VENDORJS = \
+./js/vendor/fastclick.js \
+./js/vendor/jquery.cookie.js \
+./js/vendor/jquery.js \
+./js/vendor/modernizr.js \
+./js/vendor/placeholder.js
 
 _DIST_FILES_WEB = \
-./disabled.html \
-./std_treelook.css \
 ./index.html \
-./left.html \
-./right.html \
-./top.html \
-./topleft.html \
-./topright.html \
-./main.css \
 ./cm.xml \
 ./cds.xml \
 ./favicon.ico \
 ./mr_reg.xml
+
+_DIST_FILES_CSS = \
+./css/foundation.css \
+./css/mediatomb.css \
+./css/normalize.css
 
 imagesdir = $(pkgdatadir)/web/icons/nanotree/images
 dist_images_DATA = $(_DIST_FILES_IMAGES)
@@ -95,6 +90,12 @@ dist_icons_DATA = $(_DIST_FILES_ICONS)
     
 jsdir = $(pkgdatadir)/web/js
 dist_js_DATA = $(_DIST_FILES_JS)
+
+vendorjsdir = $(pkgdatadir)/web/js/vendor
+dist_vendorjs_DATA = $(_DIST_FILES_VENDORJS)
+
+cssdir = $(pkgdatadir)/web/css
+dist_css_DATA = $(_DIST_FILES_CSS)
 
 webdir = $(pkgdatadir)/web
 dist_web_DATA = $(_DIST_FILES_WEB)
