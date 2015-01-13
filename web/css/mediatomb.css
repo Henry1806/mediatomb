@@ -1,0 +1,28 @@
+body {
+	font-family: 'Open Sans', sans-serif;
+	font-size: 8px;
+}
+
+.container_wrapper ul,
+#items {
+	list-style-type: none;
+	margin-left: 0;
+}
+
+.container_wrapper ul ul {
+	list-style-type: none;
+	padding-left: 10px;
+}
+
+.container_wrapper li,
+.item {
+	border-top: 1px solid #EEE;
+	cursor: pointer;
+	overflow: hidden;
+	text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+img.padright {
+	padding-right: 10px;
+}
