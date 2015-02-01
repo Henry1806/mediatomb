@@ -1,29 +1,29 @@
 /*MT*
-    
+
     MediaTomb - http://www.mediatomb.cc/
-    
+
     upnp_xml.cc - this file is part of MediaTomb.
-    
+
     Copyright (C) 2005 Gena Batyan <bgeradz@mediatomb.cc>,
                        Sergey 'Jin' Bostandzhyan <jin@mediatomb.cc>
-    
+
     Copyright (C) 2006-2010 Gena Batyan <bgeradz@mediatomb.cc>,
                             Sergey 'Jin' Bostandzhyan <jin@mediatomb.cc>,
                             Leonhard Wimmer <leo@mediatomb.cc>
-    
+
     MediaTomb is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2
     as published by the Free Software Foundation.
-    
+
     MediaTomb is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     version 2 along with MediaTomb; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-    
+
     $Id$
 */
 
@@ -49,17 +49,17 @@ Ref<Element> UpnpXML_CreateResponse(String actionName, String serviceType)
                                       "Response"));
     response->setAttribute(_("xmlns:u"), serviceType);
 
-    return response; 
+    return response;
 }
 
 Ref<Element> UpnpXML_DIDLRenderObject(Ref<CdsObject> obj, bool renderActions, int stringLimit)
 {
     Ref<Element> result(new Element(_("")));
-    
+
     result->setAttribute(_("id"), String::from(obj->getID()));
     result->setAttribute(_("parentID"), String::from(obj->getParentID()));
     result->setAttribute(_("restricted"), obj->isRestricted() ? _("1") : _("0"));
-   
+
     String tmp = obj->getTitle();
 
     if ((stringLimit > 0) && (tmp.length() > stringLimit))
@@ -67,23 +67,24 @@ Ref<Element> UpnpXML_DIDLRenderObject(Ref<CdsObject> obj, bool renderActions, in
         tmp = tmp.substring(0, getValidUTF8CutPosition(tmp, stringLimit-3));
         tmp = tmp + _("...");
     }
-   
+
     result->appendTextChild(_("dc:title"), tmp);
-    
+
     result->appendTextChild(_("upnp:class"), obj->getClass());
-    
+
     int objectType = obj->getObjectType();
     if (IS_CDS_ITEM(objectType))
     {
+        log_debug("Its a motherfucking item\n");
         Ref<CdsItem> item = RefCast(obj, CdsItem);
-        
+
         Ref<Dictionary> meta = obj->getMetadata();
         Ref<Array<DictionaryElement> > elements = meta->getElements();
         int len = elements->size();
-        
+
         String key;
         String upnp_class = obj->getClass();
-        
+
         for (int i = 0; i < len; i++)
         {
             Ref<DictionaryElement> el = elements->get(i);
@@ -93,7 +94,7 @@ Ref<Element> UpnpXML_DIDLRenderObject(Ref<CdsObject> obj, bool renderActions, in
                 tmp = el->getValue();
                 if ((stringLimit > 0) && (tmp.length() > stringLimit))
                 {
-                    tmp = tmp.substring(0, 
+                    tmp = tmp.substring(0,
                             getValidUTF8CutPosition(tmp, stringLimit-3));
                     tmp = tmp + _("...");
                 }
@@ -104,30 +105,50 @@ Ref<Element> UpnpXML_DIDLRenderObject(Ref<CdsObject> obj, bool renderActions, in
                 if (upnp_class == UPNP_DEFAULT_CLASS_MUSIC_TRACK)
                     result->appendTextChild(key, el->getValue());
             }
-            else if ((key != MetadataHandler::getMetaFieldName(M_TITLE)) || 
-                    ((key == MetadataHandler::getMetaFieldName(M_TRACKNUMBER)) && 
+            else if ((key != MetadataHandler::getMetaFieldName(M_TITLE)) ||
+                    ((key == MetadataHandler::getMetaFieldName(M_TRACKNUMBER)) &&
                      (upnp_class == UPNP_DEFAULT_CLASS_MUSIC_TRACK)))
                 result->appendTextChild(key, el->getValue());
         }
-        
+
 //        log_debug("ITEM HAS FOLLOWING METADATA: %s\n", item->getMetadata()->encode().c_str());
-        
-        
+
+
         CdsResourceManager::addResources(item, result);
-        
+
         result->setName(_("item"));
     }
     else if (IS_CDS_CONTAINER(objectType))
     {
         Ref<CdsContainer> cont = RefCast(obj, CdsContainer);
-        
+
         result->setName(_("container"));
         int childCount = cont->getChildCount();
         if (childCount >= 0)
             result->setAttribute(_("childCount"), String::from(childCount));
-        
+
+        if (obj->getClass().equals(UPNP_DEFAULT_CLASS_MUSIC_ALBUM))
+        {
+            Ref<Storage> storage = Storage::getInstance();
+            Ref<BrowseParam> param(new BrowseParam(cont->getID(), BROWSE_DIRECT_CHILDREN | BROWSE_ITEMS));
+            param->setRange(0, 1);
+
+            Ref<Array<CdsObject> > children = storage->browse(param);
+            if (children->size() > 0)
+            {
+                Ref<CdsObject> child = children->get(0);
+                if (IS_CDS_ITEM(child->getObjectType()))
+                {
+                    // FIXME: Need to be able to say we only want artwork
+                    log_debug("Adding resources of children\n");
+                    Ref<CdsItem> item = RefCast(child, CdsItem);
+                    CdsResourceManager::addResources(item, result);
+                }
+            }
+        }
+
     }
-    
+
     if (renderActions && IS_CDS_ACTIVE_ITEM(objectType))
     {
         Ref<CdsActiveItem> aitem = RefCast(obj, CdsActiveItem);
@@ -136,8 +157,8 @@ Ref<Element> UpnpXML_DIDLRenderObject(Ref<CdsObject> obj, bool renderActions, in
         result->appendTextChild(_("location"), aitem->getLocation());
         result->appendTextChild(_("mime-type"), aitem->getMimeType());
     }
-   
-//    log_debug("renderen DIDL: \n%s\n", result->print().c_str());
+
+    log_debug("rendered DIDL: \n%s\n", result->print().c_str());
 
     return result;
 }
@@ -147,7 +168,7 @@ void UpnpXML_DIDLUpdateObject(Ref<CdsObject> obj, String text)
     Ref<Parser> parser(new Parser());
     Ref<Element> root = parser->parseString(text)->getRoot();
     int objectType = obj->getObjectType();
-    
+
     if (IS_CDS_ACTIVE_ITEM(objectType))
     {
         Ref<CdsActiveItem> aitem = RefCast(obj, CdsActiveItem);
@@ -156,7 +177,7 @@ void UpnpXML_DIDLUpdateObject(Ref<CdsObject> obj, String text)
         if (title != nil && title != "")
             aitem->setTitle(title);
 
-        /// \todo description should be taken from the dictionary      
+        /// \todo description should be taken from the dictionary
         String description = root->getChildText(_("dc:description"));
         if (description == nil)
             description = _("");
@@ -166,7 +187,7 @@ void UpnpXML_DIDLUpdateObject(Ref<CdsObject> obj, String text)
         String location = root->getChildText(_("location"));
         if (location != nil && location != "")
             aitem->setLocation(location);
-    
+
         String mimeType = root->getChildText(_("mime-type"));
         if (mimeType != nil && mimeType != "")
             aitem->setMimeType(mimeType);
@@ -180,7 +201,7 @@ void UpnpXML_DIDLUpdateObject(Ref<CdsObject> obj, String text)
             state = _("");
         aitem->setState(state);
     }
-        
+
 }
 
 Ref<Element> UpnpXML_CreateEventPropertySet()
@@ -200,9 +221,9 @@ Ref<Element> UpnpXML_RenderDeviceDescription(String presentationURL)
     log_debug("start\n");
     Ref<ConfigManager> config = ConfigManager::getInstance();
 
-    Ref<Element> root(new Element(_("root"))); 
+    Ref<Element> root(new Element(_("root")));
     root->setAttribute(_("xmlns"), _(DESC_DEVICE_NAMESPACE));
-     
+
     Ref<Element> specVersion(new Element(_("specVersion")));
     specVersion->appendTextChild(_("major"), _(DESC_SPEC_VERSION_MAJOR));
     specVersion->appendTextChild(_("minor"), _(DESC_SPEC_VERSION_MINOR));
@@ -210,15 +231,15 @@ Ref<Element> UpnpXML_RenderDeviceDescription(String presentationURL)
     root->appendElementChild(specVersion);
 
     Ref<Element> device(new Element(_("device")));
-    
-#ifdef EXTEND_PROTOCOLINFO 
+
+#ifdef EXTEND_PROTOCOLINFO
     if (config->getBoolOption(CFG_SERVER_EXTEND_PROTOCOLINFO))
     {
         //we do not do DLNA yet but this is needed for bravia tv (v5500)
         Ref<Element> DLNADOC(new Element(_("dlna:X_DLNADOC")));
         DLNADOC->setText(_("DMS-1.50"));
 //      DLNADOC->setText(_("M-DMS-1.50"));
-        DLNADOC->setAttribute(_("xmlns:dlna"), 
+        DLNADOC->setAttribute(_("xmlns:dlna"),
                                         _("urn:schemas-dlna-org:device-1-0"));
         device->appendElementChild(DLNADOC);
     }
@@ -230,19 +251,19 @@ Ref<Element> UpnpXML_RenderDeviceDescription(String presentationURL)
     else
         device->appendTextChild(_("presentationURL"), presentationURL);
 
-    device->appendTextChild(_("friendlyName"), 
+    device->appendTextChild(_("friendlyName"),
                               config->getOption(CFG_SERVER_NAME));
 
     device->appendTextChild(_("manufacturer"), _(DESC_MANUFACTURER));
-    device->appendTextChild(_("manufacturerURL"), 
+    device->appendTextChild(_("manufacturerURL"),
                                config->getOption(CFG_SERVER_MANUFACTURER_URL));
-    device->appendTextChild(_("modelDescription"), 
+    device->appendTextChild(_("modelDescription"),
                               config->getOption(CFG_SERVER_MODEL_DESCRIPTION));
-    device->appendTextChild(_("modelName"), 
+    device->appendTextChild(_("modelName"),
                               config->getOption(CFG_SERVER_MODEL_NAME));
-    device->appendTextChild(_("modelNumber"), 
+    device->appendTextChild(_("modelNumber"),
                               config->getOption(CFG_SERVER_MODEL_NUMBER));
-    device->appendTextChild(_("serialNumber"), 
+    device->appendTextChild(_("serialNumber"),
                               config->getOption(CFG_SERVER_SERIAL_NUMBER));
     device->appendTextChild(_("UDN"), config->getOption(CFG_SERVER_UDN));
 
@@ -352,8 +373,8 @@ Ref<Element> UpnpXML_RenderDeviceDescription(String presentationURL)
     serviceMRREG->appendTextChild(_("eventSubURL"), _(DESC_MRREG_EVENT_URL));
 
     serviceList->appendElementChild(serviceMRREG);
-#endif    
-    
+#endif
+
     device->appendElementChild(serviceList);
 
     root->appendElementChild(device);
