@@ -28,6 +28,7 @@
 */
 
 /// \file mysql_storage.h
+#include "MediaTombConfig.h"
 
 #ifdef HAVE_MYSQL
 

@@ -112,7 +112,8 @@ void WebRequestHandler::get_info(IN const char *filename, OUT struct File_Info *
     contentType = mimetype + "; charset=" + DEFAULT_INTERNAL_CHARSET;
     
     info->content_type = ixmlCloneDOMString(contentType.c_str());
-    info->http_header = ixmlCloneDOMString("Cache-Control: no-cache, must-revalidate");
+    // FIXME: header crap
+    //info->http_header = ixmlCloneDOMString("Cache-Control: no-cache, must-revalidate");
 }
 
 Ref<IOHandler> WebRequestHandler::open(IN enum UpnpOpenFileMode mode)

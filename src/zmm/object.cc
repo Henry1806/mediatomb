@@ -82,9 +82,9 @@ int Object::getRefCount()
 
 void* Object::operator new (size_t size)
 {
-    return MALLOC(size);
+    return malloc(size);
 }
 void Object::operator delete (void *ptr)
 {
-    FREE(ptr);
+    free(ptr);
 }

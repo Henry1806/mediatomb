@@ -36,7 +36,7 @@
 #include "element.h"
 #include "tools.h"
 
-#include <string.h>
+#include <assert.h>
 
 using namespace zmm;
 using namespace mxml;

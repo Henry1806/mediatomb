@@ -48,12 +48,12 @@ namespace zmm
             queueEnd = 0;
             queueBegin = 0;
             overlap = false;
-            data = (T *)MALLOC(capacity * sizeof(T));
+            data = (T *)malloc(capacity * sizeof(T));
         }
         
         ~BaseQueue()
         {
-            FREE(this->data);
+            free(this->data);
         }
         
         inline int getCapacity()
@@ -83,7 +83,7 @@ namespace zmm
                 capacity = count + (count / 2);
                 if(requiredSize > capacity)
                     capacity = requiredSize;
-                data = (T *)REALLOC(data, capacity * sizeof(T));
+                data = (T *)realloc(data, capacity * sizeof(T));
                 log_debug("resizing %d -> %d\n", oldCapacity, capacity);
                 if ((overlap && (queueEnd != 0)) || queueBegin > queueEnd)
                 {

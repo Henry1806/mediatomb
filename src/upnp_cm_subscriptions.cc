@@ -37,7 +37,7 @@
 #include "upnp_cm.h"
 #include "server.h"
 #include "upnp_xml.h"
-#include "ixml.h"
+#include "upnp/ixml.h"
 #include "storage.h"
 
 using namespace zmm;

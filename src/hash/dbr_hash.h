@@ -75,13 +75,13 @@ public:
             throw zmm::Exception(_("emptyKey and deletedKey must not be the same!"));
         this->emptyKey = emptyKey;
         this->deletedKey = deletedKey;
-        data_array = (KT *)MALLOC(realCapacity * sizeof(KT));
+        data_array = (KT *)malloc(realCapacity * sizeof(KT));
         clear();
     }
     
     virtual ~DBRHash()
     {
-        FREE(data_array);
+        free(data_array);
     }
     
     /* virtual methods */

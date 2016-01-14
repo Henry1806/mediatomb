@@ -34,10 +34,6 @@
 
 #include "zmmf/zmmf.h"
 
-#ifndef HAVE_EXPAT
-    #error Expat is needed to compile MediaTomb!
-#endif
-
 #include <expat.h>
 #include "zmmf/object_stack.h"
 

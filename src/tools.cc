@@ -444,7 +444,7 @@ String mime_types_to_CSV(Ref<Array<StringBase> > mimeTypes)
 String mt_strerror(int mt_errno)
 {
 #ifdef DONT_USE_YET_HAVE_STRERROR_R
-    char *buffer = (char *)MALLOC(512);
+    char *buffer = (char *)malloc(512);
     char *err_str;
     #ifdef STRERROR_R_CHAR_P
         err_str = strerror_r(errno, buffer, 512);
@@ -457,7 +457,7 @@ String mt_strerror(int mt_errno)
         err_str = buffer;
     #endif
     String errStr(err_str);
-    FREE(buffer);
+    free(buffer);
     return errStr;
 #else
     return strerror(errno);
@@ -473,14 +473,14 @@ String read_text_file(String path)
                         path + " : " + mt_strerror(errno));
     }
     Ref<StringBuffer> buf(new StringBuffer()); 
-    char *buffer = (char *)MALLOC(1024);
+    char *buffer = (char *)malloc(1024);
     size_t bytesRead;    
     while((bytesRead = fread(buffer, 1, 1024, f)) > 0)
     {
         buf->concat(buffer, bytesRead);
     }
     fclose(f);
-    FREE(buffer);
+    free(buffer);
     return buf->toString();
 }
 void write_text_file(String path, String contents)
@@ -522,7 +522,7 @@ void copy_file(String from, String to)
         throw _Exception(_("copy_file: could not open ") +
                         to + " for write: " + mt_strerror(errno));
     }
-    char *buffer = (char *)MALLOC(1024);
+    char *buffer = (char *)malloc(1024);
     size_t bytesRead = 0;
     size_t bytesWritten = 0;
     while(bytesRead == bytesWritten && ! feof(f) && ! ferror(f) && ! ferror(t)
@@ -530,7 +530,7 @@ void copy_file(String from, String to)
     {
         bytesWritten = fwrite(buffer, 1, bytesRead, t);
     }
-    FREE(buffer);
+    free(buffer);
     if (ferror(f) || ferror(t))
     {
         int my_errno = errno;
@@ -1134,7 +1134,7 @@ String interfaceToIP(String interface)
 #if defined(__CYGWIN__)
     struct hostent *h=NULL;
     struct sockaddr_in LocalAddr;
-    char *hostname = (char *)MALLOC(256);
+    char *hostname = (char *)malloc(256);
     if (!hostname)
         return nil;
 
@@ -1458,7 +1458,7 @@ String getAVIFourCC(zmm::String avi_filename)
         throw _Exception(_("could not open file ") + avi_filename + " : " +
                           mt_strerror(errno));
 
-    buffer = (char *)MALLOC(FCC_OFFSET+6);
+    buffer = (char *)malloc(FCC_OFFSET+6);
     if (buffer == NULL)
     {
         fclose(f);

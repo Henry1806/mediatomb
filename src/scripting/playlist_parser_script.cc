@@ -157,7 +157,7 @@ void PlaylistParserScript::processPlaylistObject(zmm::Ref<CdsObject> obj, Ref<Ge
 
     currentTask = task;
     currentObjectID = obj->getID();
-    currentLine = (char *)MALLOC(ONE_TEXTLINE_BYTES);
+    currentLine = (char *)malloc(ONE_TEXTLINE_BYTES);
     if (!currentLine)
     {
         currentObjectID = INVALID_OBJECT_ID;
@@ -176,7 +176,7 @@ void PlaylistParserScript::processPlaylistObject(zmm::Ref<CdsObject> obj, Ref<Ge
     {
         currentObjectID = INVALID_OBJECT_ID;
         currentTask = nil;
-        FREE(currentLine);
+        free(currentLine);
 #ifdef JS_THREADSAFE
         JS_EndRequest(cx);
         JS_ClearContextThread(cx);
@@ -199,7 +199,7 @@ void PlaylistParserScript::processPlaylistObject(zmm::Ref<CdsObject> obj, Ref<Ge
         fclose(currentHandle);
         currentHandle = NULL;
 
-        FREE(currentLine);
+        free(currentLine);
         currentLine = NULL;
 
         currentObjectID = INVALID_OBJECT_ID;
@@ -215,7 +215,7 @@ void PlaylistParserScript::processPlaylistObject(zmm::Ref<CdsObject> obj, Ref<Ge
     fclose(currentHandle);
     currentHandle = NULL;
 
-    FREE(currentLine);
+    free(currentLine);
     currentLine = NULL;
 
     currentObjectID = INVALID_OBJECT_ID;

@@ -38,6 +38,8 @@
 #include "zmmf/zmmf.h"
 #include "exceptions.h"
 
+#include "MediaTombConfig.h"
+
 #define CONFIG_XML_VERSION_0_11_0       1
 #define CONFIG_XML_VERSION              2
 

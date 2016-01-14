@@ -35,7 +35,7 @@
 #include <pthread.h>
 
 #include "common.h"
-#include "upnp.h"
+#include "upnp/upnp.h"
 #include "io_handler.h"
 #include "sync.h"
 

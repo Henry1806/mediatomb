@@ -1,142 +1,124 @@
 /*MT*
-    
-    MediaTomb - http://www.mediatomb.cc/
-    
-    web_callbacks.cc - this file is part of MediaTomb.
-    
-    Copyright (C) 2005 Gena Batyan <bgeradz@mediatomb.cc>,
-                       Sergey 'Jin' Bostandzhyan <jin@mediatomb.cc>
-    
-    Copyright (C) 2006-2010 Gena Batyan <bgeradz@mediatomb.cc>,
-                            Sergey 'Jin' Bostandzhyan <jin@mediatomb.cc>,
-                            Leonhard Wimmer <leo@mediatomb.cc>
-    
-    MediaTomb is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License version 2
-    as published by the Free Software Foundation.
-    
-    MediaTomb is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    
-    You should have received a copy of the GNU General Public License
-    version 2 along with MediaTomb; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-    
-    $Id$
+
+	MediaTomb - http://www.mediatomb.cc/
+
+	web_callbacks.cc - this file is part of MediaTomb.
+
+	Copyright (C) 2005 Gena Batyan <bgeradz@mediatomb.cc>,
+					   Sergey 'Jin' Bostandzhyan <jin@mediatomb.cc>
+
+	Copyright (C) 2006-2010 Gena Batyan <bgeradz@mediatomb.cc>,
+							Sergey 'Jin' Bostandzhyan <jin@mediatomb.cc>,
+							Leonhard Wimmer <leo@mediatomb.cc>
+
+	MediaTomb is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License version 2
+	as published by the Free Software Foundation.
+
+	MediaTomb is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	version 2 along with MediaTomb; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
+
+	$Id$
 */
 
 /// \file web_callbacks.cc
 /// This handles the VirtualDirCallbacks that come from the web server.
 
-#ifdef HAVE_CONFIG_H
-    #include "autoconfig.h"
-#endif
-
 #include "common.h"
 #include "tools.h"
 #include "web_callbacks.h"
 #include "server.h"
-#include <unistd.h>
-#include <string.h>
-#include <stdio.h>
-#include "storage.h"
-#include "cds_objects.h"
-#include "process.h"
-#include "update_manager.h"
-#include "ixml.h"
-#include "io_handler.h"
 #include "request_handler.h"
 #include "file_request_handler.h"
 #ifdef HAVE_CURL
-    #include "url_request_handler.h"
+	#include "url_request_handler.h"
 #endif
 #include "web_request_handler.h"
 #include "serve_request_handler.h"
 #include "web/pages.h"
-#include "dictionary.h"
-
-#include <sys/types.h>
-#include <sys/stat.h>
 
 using namespace zmm;
 using namespace mxml;
 
-static Ref<RequestHandler> create_request_handler(const char *filename,
-                                                  const char *headers)
+static Ref<RequestHandler> create_request_handler(const char *filename)
 {
-    String path, parameters;
+	String path, parameters;
 
-    String link = url_unescape((char *) filename);
+	String link = url_unescape((char *) filename);
 
-    log_debug("Filename: %s, Path: %s\n", filename, path.c_str());
+	log_debug("Filename: %s, Path: %s\n", filename, path.c_str());
 //    log_debug("create_handler: got url parameters: [%s]\n", parameters.c_str());
-    
-    RequestHandler *ret = NULL;
+
+	RequestHandler *ret = NULL;
 /*
-    log_debug("Link is: %s, checking against: %s, starts with? %d\n", link.c_str(), 
-                (String(SERVER_VIRTUAL_DIR) + "/" + CONTENT_UI_HANDLER).c_str(), 
-                link.startsWith(String(SERVER_VIRTUAL_DIR) + "/" + CONTENT_UI_HANDLER));
-    log_debug("Link is: %s, checking against: %s, starts with? %d\n", link.c_str(), 
-                (String(SERVER_VIRTUAL_DIR) + "/" + CONTENT_MEDIA_HANDLER).c_str(), 
-                link.startsWith(String(SERVER_VIRTUAL_DIR) + "/" + CONTENT_MEDIA_HANDLER));
+	log_debug("Link is: %s, checking against: %s, starts with? %d\n", link.c_str(),
+				(String(SERVER_VIRTUAL_DIR) + "/" + CONTENT_UI_HANDLER).c_str(),
+				link.startsWith(String(SERVER_VIRTUAL_DIR) + "/" + CONTENT_UI_HANDLER));
+	log_debug("Link is: %s, checking against: %s, starts with? %d\n", link.c_str(),
+				(String(SERVER_VIRTUAL_DIR) + "/" + CONTENT_MEDIA_HANDLER).c_str(),
+				link.startsWith(String(SERVER_VIRTUAL_DIR) + "/" + CONTENT_MEDIA_HANDLER));
   
-    log_debug("Link is: %s, checking against: %s, starts with? %d\n", link.c_str(), 
-                (String(SERVER_VIRTUAL_DIR) + "/" + CONTENT_SERVE_HANDLER).c_str(), 
-                link.startsWith(String(SERVER_VIRTUAL_DIR) + "/" + CONTENT_SERVE_HANDLER));
+	log_debug("Link is: %s, checking against: %s, starts with? %d\n", link.c_str(),
+				(String(SERVER_VIRTUAL_DIR) + "/" + CONTENT_SERVE_HANDLER).c_str(),
+				link.startsWith(String(SERVER_VIRTUAL_DIR) + "/" + CONTENT_SERVE_HANDLER));
 */  
-    if (link.startsWith(_("/") + SERVER_VIRTUAL_DIR + "/" +
-                        CONTENT_MEDIA_HANDLER))
-    {
-            ret = new FileRequestHandler();
-    }
-    else if (link.startsWith(_("/") + SERVER_VIRTUAL_DIR + "/" +
-                             CONTENT_UI_HANDLER))
-    {  
-        RequestHandler::split_url(filename, URL_UI_PARAM_SEPARATOR, path, 
-                parameters);
-        Ref<Dictionary> dict(new Dictionary());
-        dict->decode(parameters);
-        
-        String r_type = dict->get(_(URL_REQUEST_TYPE));
-        if (r_type != nil)
-        {
-            ret = create_web_request_handler(r_type);
-        }
-        else
-        {
-            ret = create_web_request_handler(_("index"));
-        }
-    } 
-    else if (link.startsWith(_("/") + SERVER_VIRTUAL_DIR + "/" +
-                             CONTENT_SERVE_HANDLER))
-    {
-        if (string_ok(ConfigManager::getInstance()->getOption(CFG_SERVER_SERVEDIR)))
-            ret = new ServeRequestHandler();
-        else
-            throw _Exception(_("Serving directories is not enabled in configuration"));
-    }
-    /// \todo add enable/disable curl to configure.ac, currently this is automatically triggered depending on youtube and external transcoding definitions
+	if (link.startsWith(_("/") + SERVER_VIRTUAL_DIR + "/" +
+						CONTENT_MEDIA_HANDLER))
+	{
+			ret = new FileRequestHandler();
+	}
+	else if (link.startsWith(_("/") + SERVER_VIRTUAL_DIR + "/" +
+							 CONTENT_UI_HANDLER))
+	{
+		RequestHandler::split_url(filename, URL_UI_PARAM_SEPARATOR, path,
+				parameters);
+		Ref<Dictionary> dict(new Dictionary());
+		dict->decode(parameters);
+
+		String r_type = dict->get(_(URL_REQUEST_TYPE));
+		if (r_type != nil)
+		{
+			ret = create_web_request_handler(r_type);
+		}
+		else
+		{
+			ret = create_web_request_handler(_("index"));
+		}
+	}
+	else if (link.startsWith(_("/") + SERVER_VIRTUAL_DIR + "/" +
+							 CONTENT_SERVE_HANDLER))
+	{
+		if (string_ok(ConfigManager::getInstance()->getOption(CFG_SERVER_SERVEDIR)))
+			ret = new ServeRequestHandler();
+		else
+			throw _Exception(_("Serving directories is not enabled in configuration"));
+	}
+	/// \todo add enable/disable curl to configure.ac, currently this is automatically triggered depending on youtube and external transcoding definitions
 #if defined(HAVE_CURL)
-    else if (link.startsWith(_("/") + SERVER_VIRTUAL_DIR + "/" +
-                             CONTENT_ONLINE_HANDLER))
-    {
-        ret = new URLRequestHandler();
-    }
+	else if (link.startsWith(_("/") + SERVER_VIRTUAL_DIR + "/" +
+							 CONTENT_ONLINE_HANDLER))
+	{
+		ret = new URLRequestHandler();
+	}
 #endif
 #if defined(HAVE_LIBDVDREAD_DISABLED)
-    else if (link.startsWith(_("/") + SERVER_VIRTUAL_DIR + "/" + 
-                CONTENT_DVD_HANDLER))
-    {
-        ret = new DVDRequestHandler();
-    }
+	else if (link.startsWith(_("/") + SERVER_VIRTUAL_DIR + "/" +
+				CONTENT_DVD_HANDLER))
+	{
+		ret = new DVDRequestHandler();
+	}
 #endif
-    else
-    {
-        throw _Exception(_("no valid handler type in ") + filename);
-    }
-    return Ref<RequestHandler>(ret);
+	else
+	{
+		throw _Exception(_("no valid handler type in ") + filename);
+	}
+	return Ref<RequestHandler>(ret);
 }
 
 /// \brief Query information on a file.
@@ -151,29 +133,29 @@ static Ref<RequestHandler> create_request_handler(const char *filename,
 ///
 /// \return 0 Success.
 /// \return -1 Error.
-static int web_get_info(IN const char *filename, IN const char *headers, OUT struct File_Info *info)
+static int web_get_info(IN const char *filename, OUT struct File_Info *info)
 {
-    try
-    {
-        Ref<RequestHandler> reqHandler = create_request_handler(filename, headers);
-        reqHandler->get_info(filename, info);
-    }
-    catch (ServerShutdownException se)
-    {
-        return -1;
-    }
-    catch (SubtitlesNotFoundException sex)
-    {
-        log_info("%s\n", sex.getMessage().c_str());
-        return -1;
-    }
-    catch (Exception e)
-    {
-        log_error("%s\n", e.getMessage().c_str());
-        return -1;
-    }
+	try
+	{
+		Ref<RequestHandler> reqHandler = create_request_handler(filename);
+		reqHandler->get_info(filename, info);
+	}
+	catch (ServerShutdownException se)
+	{
+		return -1;
+	}
+	catch (SubtitlesNotFoundException sex)
+	{
+		log_info("%s\n", sex.getMessage().c_str());
+		return -1;
+	}
+	catch (Exception e)
+	{
+		log_error("%s\n", e.getMessage().c_str());
+		return -1;
+	}
 
-    return 0;
+	return 0;
 }
 
 /// \brief Opens a file for the web server.
@@ -191,55 +173,55 @@ static int web_get_info(IN const char *filename, IN const char *headers, OUT str
 /// \return UpnpWebFileHandle A valid file handle.
 /// \return NULL Error.
 static UpnpWebFileHandle web_open(IN const char *filename,
-                                  IN const char *headers,
-                                  OUT struct File_Info *info,
-                                  IN enum UpnpOpenFileMode mode)
+								  IN enum UpnpOpenFileMode mode)
 {
-    log_debug("web_open(): %s", headers);
+	log_debug("web_open(): %s", headers);
 
-    String link = url_unescape((char *) filename);
+	String link = url_unescape((char *) filename);
 
-    char *line = strstr((char *)headers, "TimeSeekRange.dlna.org: npt=");
-    char *timeseek;
-    if (line != NULL)
-    {
-         char *lineend = strstr(line, "\n");
-         int chars = lineend - (line + 28);
-         // limit to some value that makes sense to prevent allocating too much
-         // memory due to some maliciously prepared headers
-         if (chars < 1024)
-         {
-             timeseek = (char *)malloc(chars);
-             if (timeseek)
-             {
-                 strncpy(timeseek, line + 28, chars);
-                 log_debug("timeseek range found: %s\n",timeseek);
-                 link = link + "/range/" + timeseek;
-             }
-         }
-    }
+	// FIXME: more header hacks
+	/*char *line = strstr((char *)headers, "TimeSeekRange.dlna.org: npt=");
+	char *timeseek;
+	if (line != NULL)
+	{
+		 char *lineend = strstr(line, "\n");
+		 int chars = lineend - (line + 28);
+		 // limit to some value that makes sense to prevent allocating too much
+		 // memory due to some maliciously prepared headers
+		 if (chars < 1024)
+		 {
+			 timeseek = (char *)malloc(chars);
+			 if (timeseek)
+			 {
+				 strncpy(timeseek, line + 28, chars);
+				 log_debug("timeseek range found: %s\n",timeseek);
+				 link = link + "/range/" + timeseek;
+			 }
+		 }
+	}
+	*/
 
-    try
-    {
-        Ref<RequestHandler> reqHandler = create_request_handler(filename, headers);
-        Ref<IOHandler> ioHandler = reqHandler->open(link.c_str(), info, mode, nil);
-        ioHandler->retain();
-        return (UpnpWebFileHandle) ioHandler.getPtr();
-    }
-    catch (ServerShutdownException se)
-    {
-        return NULL;
-    }
-    catch (SubtitlesNotFoundException sex)
-    {
-        log_info("%s\n", sex.getMessage().c_str());
-        return NULL;
-    }
-    catch (Exception ex)
-    {
-        log_error("%s\n", ex.getMessage().c_str());
-        return NULL;
-    }
+	try
+	{
+		Ref<RequestHandler> reqHandler = create_request_handler(filename);
+		Ref<IOHandler> ioHandler = reqHandler->open(link.c_str(), NULL, mode, nil);
+		ioHandler->retain();
+		return (UpnpWebFileHandle) ioHandler.getPtr();
+	}
+	catch (ServerShutdownException se)
+	{
+		return NULL;
+	}
+	catch (SubtitlesNotFoundException sex)
+	{
+		log_info("%s\n", sex.getMessage().c_str());
+		return NULL;
+	}
+	catch (Exception ex)
+	{
+		log_error("%s\n", ex.getMessage().c_str());
+		return NULL;
+	}
 }
 
 
@@ -256,15 +238,15 @@ static UpnpWebFileHandle web_open(IN const char *filename,
 /// \return 0   EOF encountered.
 /// \return -1  Error.
 static int web_read(IN UpnpWebFileHandle f, OUT char *buf, 
-                    IN size_t length)
+					IN size_t length)
 {
-    if (Server::getInstance()->getShutdownStatus())
-        return -1;
+	if (Server::getInstance()->getShutdownStatus())
+		return -1;
 
-    IOHandler *handler = (IOHandler *)f;
-    return handler->read(buf, length);
+	IOHandler *handler = (IOHandler *)f;
+	return handler->read(buf, length);
 }
-                                                                                                                                                                         
+
 /// \brief Writes to a previously opened file sequentially.
 /// \param f Handle of the file.
 /// \param buf This buffer will be filled by fwrite.
@@ -280,11 +262,11 @@ static int web_read(IN UpnpWebFileHandle f, OUT char *buf,
 ///
 /// \warning Currently this function is not supported.
 static int web_write(IN UpnpWebFileHandle f, IN char *buf,
-                      IN size_t length)
+					  IN size_t length)
 {
-    return 0;
+	return 0;
 }
-                                                                                                                                                                         
+
 /// \brief Performs a seek on an open file.
 /// \param f Handle of the file.
 /// \param offset Number of bytes to move in the file. For seeking forwards
@@ -300,19 +282,19 @@ static int web_write(IN UpnpWebFileHandle f, IN char *buf,
 /// \return 0 On success, non-zero value on error.
 static int web_seek(IN UpnpWebFileHandle f, IN off_t offset, IN int whence)
 {
-    try 
-    {
-        IOHandler *handler = (IOHandler *)f;
-        handler->seek(offset, whence);
-    }
-    catch(Exception e)
-    {
-        log_error("web_seek(): Exception during seek: %s\n", e.getMessage().c_str());
-        e.printStackTrace();
-        return -1;
-    }
+	try
+	{
+		IOHandler *handler = (IOHandler *)f;
+		handler->seek(offset, whence);
+	}
+	catch(Exception e)
+	{
+		log_error("web_seek(): Exception during seek: %s\n", e.getMessage().c_str());
+		e.printStackTrace();
+		return -1;
+	}
 
-    return 0;
+	return 0;
 }
 
 /// \brief Closes a previously opened file.
@@ -324,19 +306,19 @@ static int web_seek(IN UpnpWebFileHandle f, IN off_t offset, IN int whence)
 static int web_close( IN UpnpWebFileHandle f)
 {
 
-    Ref<IOHandler> handler((IOHandler *)f);
-    handler->release();
-    try
-    {
-        handler->close();
-    }
-    catch(Exception e)
-    {
-        log_error("web_seek(): Exception during seek: %s\n", e.getMessage().c_str());
-        e.printStackTrace();
-        return -1;
-    }
-    return 0;
+	Ref<IOHandler> handler((IOHandler *)f);
+	handler->release();
+	try
+	{
+		handler->close();
+	}
+	catch(Exception e)
+	{
+		log_error("web_seek(): Exception during seek: %s\n", e.getMessage().c_str());
+		e.printStackTrace();
+		return -1;
+	}
+	return 0;
 }
 
 /// \brief Registers callback functions for the internal web server.
@@ -353,16 +335,16 @@ static int web_close( IN UpnpWebFileHandle f)
 /// \return UPNP_E_SUCCESS Callbacks registered successfully, else eror code.
 int register_web_callbacks()
 {
-    int ret = UPNP_E_SUCCESS;
+	int ret = UPNP_E_SUCCESS;
 
-    struct UpnpVirtualDirCallbacks cb;
-    cb.get_info = web_get_info;
-    cb.open = web_open;
-    cb.read = web_read;
-    cb.write = web_write;
-    cb.seek = web_seek;
-    cb.close = web_close;
+	struct UpnpVirtualDirCallbacks cb;
+	cb.get_info = web_get_info;
+	cb.open = web_open;
+	cb.read = web_read;
+	cb.write = web_write;
+	cb.seek = web_seek;
+	cb.close = web_close;
 
-    ret = UpnpSetVirtualDirCallbacks(&cb);
-    return ret;
+	ret = UpnpSetVirtualDirCallbacks(&cb);
+	return ret;
 }   

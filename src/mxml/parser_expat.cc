@@ -29,12 +29,6 @@
 
 /// \file parser_expat.cc
 
-#ifdef HAVE_CONFIG_H
-    #include "autoconfig.h"
-#endif
-
-#ifdef HAVE_EXPAT
-
 #include "parser.h"
 
 using namespace zmm;
@@ -171,5 +165,3 @@ Ref<Document> Parser::parse(Ref<Context> ctx, String input)
     XML_ParserFree(parser);
     return document;
 }
-
-#endif

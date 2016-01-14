@@ -29,9 +29,7 @@
 
 /// \file sqlite3_storage.cc
 
-#ifdef HAVE_CONFIG_H
-    #include "autoconfig.h"
-#endif
+#include "MediaTombConfig.h"
 
 #ifdef HAVE_SQLITE3
 

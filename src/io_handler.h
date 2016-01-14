@@ -33,7 +33,7 @@
 #define __IO_HANDLER_H__
 
 #include "common.h"
-#include "upnp.h"
+#include "upnp/upnp.h"
 
 class IOHandler : public zmm::Object
 {

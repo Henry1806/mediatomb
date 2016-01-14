@@ -46,11 +46,11 @@ public:
     {
         this->capacity = capacity;
         count = 0;
-        data = (ST *)MALLOC(capacity * sizeof(ST));
+        data = (ST *)malloc(capacity * sizeof(ST));
     }
     virtual ~DHashBase()
     {
-        FREE(data);
+        free(data);
     }
     void zero()
     {

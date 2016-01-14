@@ -70,7 +70,7 @@ void IOHandlerBufferHelper::open(IN enum UpnpOpenFileMode mode)
 {
     if (isOpen)
         throw _Exception(_("tried to reopen an open IOHandlerBufferHelper"));
-    buffer = (char *)MALLOC(bufSize);
+    buffer = (char *)malloc(bufSize);
     if (buffer == NULL)
         throw _Exception(_("Failed to allocate memory for transcoding buffer!"));
 
@@ -192,7 +192,7 @@ void IOHandlerBufferHelper::close()
         throw _Exception(_("close called on closed IOHandlerBufferHelper"));
     isOpen = false;
     stopBufferThread();
-    FREE(buffer);
+    free(buffer);
     buffer = NULL;
 }
 

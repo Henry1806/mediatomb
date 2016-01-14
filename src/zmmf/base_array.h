@@ -58,13 +58,13 @@ public:
     {
         this->capacity = capacity;
         siz = 0;
-        arr = (T *)MALLOC(capacity * sizeof(T));
+        arr = (T *)malloc(capacity * sizeof(T));
     }
     
     ~BaseArray()
     {
         if (arr)
-            FREE(arr);
+            free(arr);
     }
     
     void append(T el)
@@ -136,7 +136,7 @@ public:
             if(requiredSize > newCapacity)
                 newCapacity = requiredSize;
             capacity = newCapacity;
-            arr = (T *)REALLOC(arr, capacity * sizeof(T));
+            arr = (T *)realloc(arr, capacity * sizeof(T));
         }
     }
     

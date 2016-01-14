@@ -54,7 +54,7 @@ DVDIOHandler::DVDIOHandler(String dvdname, int track, int chapter,
                            int audio_stream_id) : IOHandler()
 {
     this->dvdname = dvdname;
-    small_buffer = (unsigned char *)MALLOC(DVD_VIDEO_LB_LEN);
+    small_buffer = (unsigned char *)malloc(DVD_VIDEO_LB_LEN);
     if (small_buffer == NULL)
         throw _Exception(_("Could not allocate memory for DVD small databuffer!"));
     small_buffer[0] = '\0';
@@ -166,7 +166,7 @@ off_t DVDIOHandler::length()
 DVDIOHandler::~DVDIOHandler()
 {
     if (small_buffer)
-        FREE(small_buffer);
+        free(small_buffer);
 }
 
 #endif//HAVE_LIBDVDNAV

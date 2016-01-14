@@ -116,14 +116,14 @@ Matcher::Matcher(zmm::Ref<RExp> rexp, String text, int nmatch)
     this->ptr = NULL;
     this->nmatch = nmatch++; 
     if (this->nmatch)
-        this->pmatch = (regmatch_t *)MALLOC(this->nmatch * sizeof(regmatch_t));
+        this->pmatch = (regmatch_t *)malloc(this->nmatch * sizeof(regmatch_t));
     else
         this->pmatch = NULL;
 }
 Matcher::~Matcher()
 {
     if (pmatch)
-        FREE(pmatch);
+        free(pmatch);
 }
 String Matcher::group(int i)
 {

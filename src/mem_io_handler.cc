@@ -39,7 +39,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
-#include "ixml.h"
+#include "upnp/ixml.h"
 #include <time.h>
 #include "common.h"
 #include "storage.h"
@@ -54,7 +54,7 @@ using namespace mxml;
 
 MemIOHandler::MemIOHandler(void *buffer, int length) : IOHandler()
 {
-    this->buffer = (char *)MALLOC(length);
+    this->buffer = (char *)malloc(length);
     this->length = length;
     memcpy(this->buffer, buffer, length);
 }
@@ -62,13 +62,13 @@ MemIOHandler::MemIOHandler(void *buffer, int length) : IOHandler()
 MemIOHandler::MemIOHandler(String str) : IOHandler()
 {
     this->length = str.length();
-    this->buffer = (char *)MALLOC(length);
+    this->buffer = (char *)malloc(length);
     memcpy(this->buffer, str.c_str(), length);
 }
 
 MemIOHandler::~MemIOHandler()
 {
-    FREE(buffer);
+    free(buffer);
 }
 
 void MemIOHandler::open(IN enum UpnpOpenFileMode mode)

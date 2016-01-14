@@ -166,7 +166,8 @@ void Server::upnp_init(String iface, String ip_address, int port)
     if (storage->threadCleanupRequired())
         cb = (void *)static_cleanup_callback;
 
-    ret = UpnpInit(ip.c_str(), port, 0, cb);
+    //    ret = UpnpInit2(ip.c_str(), port, 0, cb);
+    ret = UpnpInit2(ip.c_str(), port);
 
     if (ret != UPNP_E_SUCCESS)
     {
@@ -202,25 +203,29 @@ void Server::upnp_init(String iface, String ip_address, int port)
 
     log_debug("webroot: %s\n", web_root.c_str()); 
 
-        Ref<Array<StringBase> > arr = config->getStringArrayOption(CFG_SERVER_CUSTOM_HTTP_HEADERS);
-
-        if (arr != nil)
-        {
-            String tmp;
-            for (int i = 0; i < arr->size(); i++)
-            {
-                tmp = arr->get(i);
-                if (string_ok(tmp))
-                {
-                    log_info("Adding HTTP header \"%s\"\n", tmp.c_str());
-                    ret = UpnpAddCustomHTTPHeader(tmp.c_str());
-                    if (ret != UPNP_E_SUCCESS)
-                    {
-                        throw _UpnpException(ret, _("upnp_init: UpnpAddCustomHTTPHeader failed"));
-                    }
-                }
-            }
-        }
+	/*
+	 *
+	 * TODO: This needs to be moved to use extra_headers in File_Info
+	 *
+	Ref<Array<StringBase> > arr = config->getStringArrayOption(CFG_SERVER_CUSTOM_HTTP_HEADERS);
+	if (arr != nil)
+	{
+		String tmp;
+		for (int i = 0; i < arr->size(); i++)
+		{
+			tmp = arr->get(i);
+			if (string_ok(tmp))
+			{
+				log_info("Adding HTTP header \"%s\"\n", tmp.c_str());
+				ret = UpnpAddCustomHTTPHeader(tmp.c_str());
+				if (ret != UPNP_E_SUCCESS)
+				{
+					throw _UpnpException(ret, _("upnp_init: UpnpAddCustomHTTPHeader failed"));
+				}
+			}
+		}
+	}
+	 */
 
     ret = UpnpAddVirtualDir(virtual_directory.c_str());
     if (ret != UPNP_E_SUCCESS)

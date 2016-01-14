@@ -103,7 +103,7 @@ zmm::String StringConverter::_convert(String str, bool validate,
     int buf_size = str.length() * 4;
 
     char *input = str.c_str();
-    char *output = (char *)MALLOC(buf_size);
+    char *output = (char *)malloc(buf_size);
     if (!output)
     {
         log_debug("Could not allocate memory for string conversion!\n");
@@ -158,7 +158,7 @@ zmm::String StringConverter::_convert(String str, bool validate,
                 ret_str = String(output, output_copy - output);
                 dirty = true;
                 *output_copy = 0;
-                FREE(output);
+                free(output);
                 return ret_str;
                 break;
             case E2BIG:
@@ -175,7 +175,7 @@ zmm::String StringConverter::_convert(String str, bool validate,
 //        log_debug("iconv: converted part:  %s\n", output);
         dirty = true;
         if (output)
-            FREE(output);
+            free(output);
         throw _Exception(err);
     }
    
@@ -184,7 +184,7 @@ zmm::String StringConverter::_convert(String str, bool validate,
     //log_debug("iconv: returned %d\n", ret);
 
     ret_str = String(output, output_copy - output);
-    FREE(output);
+    free(output);
     if (stoppedAt)
         *stoppedAt = 0; // no error 
     return ret_str;

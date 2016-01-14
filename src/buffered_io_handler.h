@@ -33,7 +33,7 @@
 #define __BUFFERED_IO_HANDLER_H__
 
 #include "common.h"
-#include "upnp.h"
+#include "upnp/upnp.h"
 #include "io_handler_buffer_helper.h"
 
 /// \brief a IOHandler with buffer support

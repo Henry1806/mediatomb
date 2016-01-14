@@ -49,7 +49,7 @@ IOHandlerChainer::IOHandlerChainer(Ref<IOHandler> readFrom, Ref<IOHandler> write
     this->readFrom = readFrom;
     this->writeTo = writeTo;
     readFrom->open(UPNP_READ);
-    buf = (char *)MALLOC(chunkSize);
+    buf = (char *)malloc(chunkSize);
     startThread();
 }
 

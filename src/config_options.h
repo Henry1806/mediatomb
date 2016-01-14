@@ -37,6 +37,9 @@
 #include "exceptions.h"
 #include "autoscan.h"
 #include "object_dictionary.h"
+#include "assert.h"
+
+#include "MediaTombConfig.h"
 
 #ifdef EXTERNAL_TRANSCODING
     #include "transcoding/transcoding.h"

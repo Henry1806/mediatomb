@@ -47,12 +47,12 @@ namespace zmm
             capacity = initialCapacity;
             this->emptyType = emptyType;
             count = 0;
-            data = (T *)MALLOC(capacity * sizeof(T));
+            data = (T *)malloc(capacity * sizeof(T));
         }
         
         ~BaseStack()
         {
-            FREE(this->data);
+            free(this->data);
         }
         
         inline int getCapacity()
@@ -87,7 +87,7 @@ namespace zmm
                 capacity = count + (count / 2);
                 if(requiredSize > capacity)
                     capacity = requiredSize;
-                data = (T *)REALLOC(data, capacity * sizeof(T));
+                data = (T *)realloc(data, capacity * sizeof(T));
 #ifdef TOMBDEBUG
                 log_debug("resizing %d -> %d\n", oldCapacity, capacity);
 #endif

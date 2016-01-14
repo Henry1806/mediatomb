@@ -45,7 +45,7 @@ using namespace zmm;
 StringBuffer::StringBuffer()
 {
     capacity = DEFAULT_STRINGBUFFER_CAPACITY;
-    data = (char *)MALLOC((capacity + 1) * sizeof(char));
+    data = (char *)malloc((capacity + 1) * sizeof(char));
     len = 0;
     data[len] = 0;
 }
@@ -53,14 +53,14 @@ StringBuffer::StringBuffer()
 StringBuffer::StringBuffer(int capacity)
 {
     this->capacity = capacity;
-    data = (char *)MALLOC((capacity + 1) * sizeof(char));
+    data = (char *)malloc((capacity + 1) * sizeof(char));
     len = 0;
     data[len] = 0;
 }
 
 StringBuffer::~StringBuffer()
 {
-    FREE(data);
+    free(data);
 }
 
 StringBuffer &StringBuffer::operator<<(String other)
@@ -212,6 +212,6 @@ void StringBuffer::ensureCapacity(int neededCapacity)
         if(neededCapacity > newCapacity)
             newCapacity = neededCapacity;
         capacity = newCapacity;
-        data = (char *)REALLOC(data, (capacity + 1) * sizeof(char));
+        data = (char *)realloc(data, (capacity + 1) * sizeof(char));
     }
 }

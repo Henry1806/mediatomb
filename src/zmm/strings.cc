@@ -43,20 +43,20 @@ using namespace zmm;
 StringBase::StringBase(int capacity) : Object()
 {
     len = capacity;
-    data = (char *)MALLOC((len + 1) * sizeof(char));
+    data = (char *)malloc((len + 1) * sizeof(char));
     store = true;
 }
 StringBase::StringBase(const char *str) : Object()
 {
     len = (int)strlen(str);
-    data = (char *)MALLOC((len + 1) * sizeof(char));
+    data = (char *)malloc((len + 1) * sizeof(char));
     strcpy(data, str);
     store = true;
 }
 StringBase::StringBase(const char *str, int len) : Object()
 {
     this->len = len;
-    data = (char *)MALLOC((len + 1) * sizeof(char));
+    data = (char *)malloc((len + 1) * sizeof(char));
     memcpy(data, str, len);
     data[len] = 0;
     store = true;
@@ -65,7 +65,7 @@ StringBase::StringBase(const char *str, int len) : Object()
 StringBase::~StringBase()
 {
     if (store)
-        FREE(data);
+        free(data);
 }
 
 bool StringBase::startsWith(StringBase *other)

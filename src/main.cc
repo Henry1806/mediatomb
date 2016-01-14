@@ -34,9 +34,8 @@
 /// This documentation was generated using doxygen, you can reproduce it by 
 /// running "doxygen doxygen.conf" from the mediatomb/doc/ directory.
 
-#ifdef HAVE_CONFIG_H
-    #include "autoconfig.h"
-#endif
+
+#include "MediaTombConfig.h"
 
 #include "common.h"
 #include "singleton.h"
@@ -80,7 +79,7 @@ Ref<Timer> timer = nil;
 
 void print_copyright()
 {
-    printf("\nMediaTomb UPnP Server version %s - %s\n\n", VERSION, 
+    printf("\nMediaTomb UPnP Server version %s - %s\n\n", VERSION,
             DESC_MANUFACTURER_URL);
     printf("===============================================================================\n");
     printf("Copyright 2005-2010 Gena Batsyan, Sergey Bostandzhyan, Leonhard Wimmer.\n");
