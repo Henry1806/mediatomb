@@ -171,9 +171,7 @@ void URLRequestHandler::get_info(IN const char *filename, OUT struct File_Info *
 }
 
 Ref<IOHandler> URLRequestHandler::open(IN const char *filename,
-                                       OUT struct File_Info *info,
-                                       IN enum UpnpOpenFileMode mode,
-                                       IN String range)
+                                       IN enum UpnpOpenFileMode mode)
 {
     int objectID;
     String mimeType;

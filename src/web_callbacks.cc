@@ -204,7 +204,8 @@ static UpnpWebFileHandle web_open(IN const char *filename,
 	try
 	{
 		Ref<RequestHandler> reqHandler = create_request_handler(filename);
-		Ref<IOHandler> ioHandler = reqHandler->open(link.c_str(), NULL, mode, nil);
+		// FIXME : NULL
+		Ref<IOHandler> ioHandler = reqHandler->open(link.c_str(), mode);
 		ioHandler->retain();
 		return (UpnpWebFileHandle) ioHandler.getPtr();
 	}

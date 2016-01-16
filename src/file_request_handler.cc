@@ -350,9 +350,7 @@ void FileRequestHandler::get_info(IN const char *filename, OUT struct File_Info 
 }
 
 Ref<IOHandler> FileRequestHandler::open(IN const char *filename,
-                                        OUT struct File_Info *info,
-                                        IN enum UpnpOpenFileMode mode,
-                                        IN zmm::String range)
+                                        IN enum UpnpOpenFileMode mode)
 {
     int objectID;
     String mimeType;
@@ -508,21 +506,6 @@ Ref<IOHandler> FileRequestHandler::open(IN const char *filename,
             throw _Exception(_("Failed to open ") + path + " - " + strerror(errno));
     }
 
-    if (access(path.c_str(), R_OK) == 0)
-    {
-        info->is_readable = 1;
-    }
-    else
-    {
-        info->is_readable = 0;
-    }
-
-    String header;
-
-    info->last_modified = statbuf.st_mtime;
-    info->is_directory = S_ISDIR(statbuf.st_mode);
-
-
     log_debug("path: %s\n", path.c_str());
     int slash_pos = path.rindex(DIR_SEPARATOR);
     if (slash_pos >= 0)
@@ -532,8 +515,8 @@ Ref<IOHandler> FileRequestHandler::open(IN const char *filename,
             slash_pos++;
 
 
-            header = _("Content-Disposition: attachment; filename=\"") + 
-                path.substring(slash_pos) + _("\"");
+            //header = _("Content-Disposition: attachment; filename=\"") +
+            //    path.substring(slash_pos) + _("\"");
         }
     }
     log_debug("fetching resource id %d\n", res_id);
@@ -551,7 +534,7 @@ Ref<IOHandler> FileRequestHandler::open(IN const char *filename,
     }
 #endif
 
-    info->content_type = NULL;
+    //info->content_type = NULL;
     // Per default and in case of a bad resource ID, serve the file
     // itself
 
@@ -562,7 +545,7 @@ Ref<IOHandler> FileRequestHandler::open(IN const char *filename,
     if (((res_id > 0) && (res_id < item->getResourceCount())) ||
         ((res_id > 0) && string_ok(rh)))
     {
-        info->file_length = -1;
+        //info->file_length = -1;
 
         int res_handler;
         if (string_ok(rh))
@@ -588,11 +571,12 @@ Ref<IOHandler> FileRequestHandler::open(IN const char *filename,
         header = getDLNAtransferHeader(mimeType, header);
 #endif
 
-        if (string_ok(header))
-                info->content_type = ixmlCloneDOMString(header.c_str());
+        //if (string_ok(header))
+        //        info->content_type = ixmlCloneDOMString(header.c_str());
 
-        info->content_type = ixmlCloneDOMString(mimeType.c_str());
-        Ref<IOHandler> io_handler = h->serveContent(item, res_id, &(info->file_length));
+        //info->content_type = ixmlCloneDOMString(mimeType.c_str());
+		off_t file_length = -1;
+        Ref<IOHandler> io_handler = h->serveContent(item, res_id, &(file_length));
         io_handler->open(mode);
         return io_handler;
     }
@@ -686,8 +670,8 @@ Ref<IOHandler> FileRequestHandler::open(IN const char *filename,
             if (mimeType == nil)
                 mimeType = item->getMimeType();
 
-            info->file_length = statbuf.st_size;
-            info->content_type = ixmlCloneDOMString(mimeType.c_str());
+            //info->file_length = statbuf.st_size;
+            //info->content_type = ixmlCloneDOMString(mimeType.c_str());
 
             log_debug("Adding content disposition header: %s\n", 
                     header.c_str());
@@ -696,17 +680,17 @@ Ref<IOHandler> FileRequestHandler::open(IN const char *filename,
             // seeking
             if (S_ISREG(statbuf.st_mode))
             {
-                if (string_ok(header))
-                    header = header + _("\r\n");
+            //    if (string_ok(header))
+            //        header = header + _("\r\n");
 
-                header = header + _("Accept-Ranges: bytes");
+            //    header = header + _("Accept-Ranges: bytes");
             }
 
 #ifdef EXTEND_PROTOCOLINFO
             header = getDLNAtransferHeader(mimeType, header);
 #endif
-            if (string_ok(header))
-                info->content_type = ixmlCloneDOMString(header.c_str());
+            //if (string_ok(header))
+            //	info->content_type = ixmlCloneDOMString(header.c_str());
 
 
             Ref<IOHandler> io_handler(new FileIOHandler(path));

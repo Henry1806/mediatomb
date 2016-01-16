@@ -1,0 +1,6 @@
+// the configured options and settings for Tutorial
+#define VERSION "@VERSION@"
+#define PACKAGE_DATADIR "@DATA_DIR@"
+#define PACKAGE_NAME "@NAME@"
+#cmakedefine HAVE_MYSQL
+#cmakedefine HAVE_SQLITE3

@@ -145,9 +145,7 @@ void ServeRequestHandler::get_info(IN const char *filename, OUT struct File_Info
 }
 
 Ref<IOHandler> ServeRequestHandler::open(IN const char *filename,
-                                         OUT struct File_Info *info,
-                                         IN enum UpnpOpenFileMode mode,
-                                         IN zmm::String range)
+                                         IN enum UpnpOpenFileMode mode)
 {
     struct stat statbuf;
     int ret = 0;
@@ -213,10 +211,10 @@ Ref<IOHandler> ServeRequestHandler::open(IN const char *filename,
         }
 #endif // HAVE_MAGIC
 
-        info->file_length = statbuf.st_size;
-        info->last_modified = statbuf.st_mtime;
-        info->is_directory = S_ISDIR(statbuf.st_mode);
-
+       // info->file_length = statbuf.st_size;
+        //info->last_modified = statbuf.st_mtime;
+        //info->is_directory = S_ISDIR(statbuf.st_mode);
+        /*
         if (access(path.c_str(), R_OK) == 0)
         {
             info->is_readable = 1;
@@ -226,7 +224,8 @@ Ref<IOHandler> ServeRequestHandler::open(IN const char *filename,
             info->is_readable = 0;
         }
 
-        info->content_type = ixmlCloneDOMString(mimetype.c_str());
+        info->content_type = ixmlCloneDOMString(mimetype.c_str());#
+        */
     }
     else
     {
